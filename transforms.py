@@ -10,6 +10,8 @@ import torchvision.transforms.functional as F
 from torchvision.transforms import InterpolationMode
 import numpy as np
 
+# refer to randaugment in pytorch
+
 def augmentation_space(num_bins: int, image_size: Tuple[int, int]) -> Dict[str, Tuple[Tensor, bool]]:
     return {
         # op_name: (magnitudes, signed)
@@ -24,11 +26,8 @@ def augmentation_space(num_bins: int, image_size: Tuple[int, int]) -> Dict[str, 
         "Contrast": (torch.linspace(0.0, 5.0, num_bins), False),
         "Sharpness": (torch.linspace(0.0, 5.0, num_bins), False),
         "Solarize": (torch.linspace(255.0, 0.0, num_bins), False),
-        # "AutoContrast": (torch.tensor(0.0), False), 
-        # Customized
-        # "Scale": (torch.linspace(0.0, 6.0, num_bins), False), 
+         
         "Crop": (torch.linspace(1.0, 0.0, num_bins), False),
-        # "CutOut": (torch.linspace(0.0, 210, num_bins), False),
         "Flip": (torch.linspace(0.0, 1.0, num_bins), False),
         'DI': (torch.linspace(299, 700, num_bins), False)
         }
@@ -54,8 +53,6 @@ def ColorRelated(
         img_out = F.autocontrast(img)
     elif op_name == 'Identity':
         img_out = img
-    # elif op_name == 'Scale':
-    #     img_out = img/(2**magnitude)
     return img_out
 
 def PositionRelated(
@@ -111,20 +108,6 @@ def PositionRelated(
     elif op_name == 'Crop':
         crop = torchvision.transforms.RandomResizedCrop(299, scale=(magnitude, 1.0), ratio=(1.,1.))
         img_out = crop(img)
-    # elif op_name == 'CutOut':
-    #     n_holes = 1
-    #     h,w = img.shape[2], img.shape[3]
-    #     mask = torch.ones((h, w), dtype=img.dtype).cuda()
-    #     for n in range(n_holes):
-    #         y = np.random.randint(h)
-    #         x = np.random.randint(w)
-    #         y1 = int(np.clip(y - magnitude // 2, 0, h))
-    #         y2 = int(np.clip(y + magnitude // 2, 0, h))
-    #         x1 = int(np.clip(x - magnitude // 2, 0, w))
-    #         x2 = int(np.clip(x + magnitude // 2, 0, w))
-    #         mask[y1: y2, x1: x2] = 0.
-    #     mask = mask.expand_as(img)
-    #     img_out = img * mask
     elif op_name == 'Flip':
         c = np.random.rand(1)[0]
         if c <= magnitude:
@@ -266,4 +249,3 @@ class TargetAdvAugment(torch.nn.Module):
                     forward_img = PositionRelated(forward_img, op_name, para, interpolation=self.interpolation, fill=self.fill)
                     opt_info[op_name] = para
         return forward_img
-        # return forward_img, opt_info
