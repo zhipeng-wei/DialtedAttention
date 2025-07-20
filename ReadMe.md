@@ -1,64 +1,51 @@
+<div align="center">
+
+<h1><a href="">What Do Visual Models Look At? Dilated Attention for Targeted Transferable Attacks</a></h1>
+
+**International Journal of Computer Vision**
+
+**[Zhipeng Wei](https://zhipeng-wei.github.io/), [Jingjing Chen](https://fvl.fudan.edu.cn/people/jingjingchen), [Yu-Gang Jiang](https://fvl.fudan.edu.cn/people/yugangjiang/)**
+
+
 # Environment
-See [environment.yml](./environment.yml) for package requirements.   
-We use NVIDIA GeForce RTX 3090 (24GB) to conduct our experiments.
+See [environment.yml](./environment.yml) for package requirements.
 
 # Download Dataset
-The NIPS 2017 ImageNet-Compatible dataset is from [clevenhans](https://github.com/cleverhans-lab/cleverhans/tree/master/cleverhans_v3.1.0/examples/nips17_adversarial_competition/dataset). But we download this dataset from [Targeted-tranfer](https://github.com/ZhengyuZhao/Targeted-Tansfer).
+The NIPS 2017 ImageNet-Compatible dataset is from [clevenhans](https://github.com/cleverhans-lab/cleverhans/tree/master/cleverhans_v3.1.0/examples/nips17_adversarial_competition/dataset). We download this dataset from [Targeted-tranfer](https://github.com/ZhengyuZhao/Targeted-Tansfer).
 
 # Some Variables
 The variables OPT_PATH and NIPS_DATA in [utils.py](./utils.py) need to be specified with your own output path and the downloaded dataset path.
 
 # Run our experiments
-For performing T-Aug,
+## Our Attack
 ```
-python transforms_main.py --gpu {gpu} --no-subset --white_box {model} --loss_fn {loss_fn} --attack SingleTransormsAttack --target --transform_type TargetAdvAugment --num_ops 5 --magnitude 2 --delete_ops Crop DI Rotate --file_tailor exp-taug-table
+python main.py --gpu 0 --white_box resnet50 --attack DTMI_DilatedAttention --loss_fn Attention --target --baseline_cmd DI_TI_MI --linear_aug Ours --layers layer1 layer2 layer3 layer4
 ```
-For performing H-Aug,
-```
-python transforms_main.py --gpu {gpu} --no-subset --white_box {model} --loss_fn {loss_fn} --attack SingleTransormsAttack --target --transform_type TargetAdvAugment --num_ops 2 --magnitude 8 --delete_ops ShearX ShearY TranslateX TranslateY Flip --file_tailor exp-haug-table
-```
-For performing T-Aug-TM,
-```
-python transforms_main.py --gpu {gpu} --no-subset --white_box {model} --loss_fn {loss_fn} --attack SingleTransormsAttack_TMI --target --transform_type TargetAdvAugment --num_ops 5 --magnitude 2 --delete_ops Crop DI Rotate --file_tailor exp-taug_tm-table
-```
-For performing H-Aug-TM,
-```
-python transforms_main.py --gpu {gpu} --no-subset --white_box {model} --loss_fn {loss_fn} --attack SingleTransormsAttack_TMI --target --transform_type TargetAdvAugment --num_ops 2 --magnitude 8 --delete_ops ShearX ShearY TranslateX TranslateY Flip --file_tailor exp-haug_tm-table
-```
-where {gpu} is the id of gpu device, {model} denotes the white-box model, and is selected from ['densenet121', 'inception_v3', 'resnet50', 'vgg16_bn'], {loss_fn} is selected from ['CE', 'Logit'].
+In this command:
+* --white_box resnet50 spcifies the white-box surrogate model
+* --attack DTMI_DilatedAttention refers to the attack class we implemented in transfer_attacks.py.
+* --loss_fn Attention specifies the use of our proposed Attention loss.
+* --target means the transferable targeted attack.
+* --baseline_cmd DI_TI_MI indicates that the attack integrates DI, TI, and MI techniques.
+* --linear_aug Ours enables our dynamic linear augmentation method.
+* --layers layer1 layer2 layer3 layer4 specifies the layers on which the attention loss is calculated.
+**Note:** The specific layers used to compute attention loss vary by model:
 
-For performing T-Aug in the ensemble-model transfer scenario,
-```
-python ensemble_main.py --gpu {gpu} --black_box {model} --loss_fn {loss_fn} --attack Ensemble_DTMI_Transforms --target --no-saveperts --num_ops 5 --magnitude 2 --delete_ops Crop DI Rotate --file_tailor exp-taug_ensemble-table --batch_size 5
-```
-For performing H-Aug in the ensemble-model transfer scenario,
-```
-python ensemble_main.py --gpu {gpu} --black_box {model} --loss_fn {loss_fn} --attack Ensemble_DTMI_Transforms --target --no-saveperts --num_ops 2 --magnitude 8 --delete_ops ShearX ShearY TranslateX TranslateY Flip --file_tailor exp-haug_ensemble-table --batch_size 5
-```
-where [model] denotes the attacked black-box model.
+- **densenet121**:  
+  `features_denseblock1`, `features_denseblock2`, `features_denseblock3`, `features_norm5`
 
-# Explore different $N$ and $M$
-For T-Aug,
-```
-python transforms_main.py --gpu {gpu} --subset --white_box {model} --loss_fn {loss_fn} --attack SingleTransormsAttack --target --transform_type TargetAdvAugment --num_ops {N} --magnitude {M} --delete_ops Crop DI Rotate --file_tailor exp-taug-table-{N}_{M}
-```
-For H-Aug,
-```
-python transforms_main.py --gpu {gpu} --subset --white_box {model} --loss_fn {loss_fn} --attack SingleTransormsAttack --target --transform_type TargetAdvAugment --num_ops {N} --magnitude {M} --delete_ops ShearX ShearY TranslateX TranslateY Flip --file_tailor exp-haug-table-{N}_{M}
-```
+- **inception_v3**:  
+  `Conv2d_4a_3x3`, `Mixed_5d`, `Mixed_6e`, `Mixed_7c`
 
-# Motivation
-### Figure 1
-```python
-python motivation_run.py
+- **vgg16_bn**:  
+  `features_12`, `features_22`, `features_32`, `features_42`
+
+## Ensemble Attack
 ```
-### Figure 2
-Attention heatmaps w.r.t. the target class in different models:
-```python
-python gradcam_figure2.py 
+python ensemble_main.py --gpu 0 --black_box densenet121 --attack Ensemble_CommonWeakness --Ours
 ```
-### Figure 3
-IoUs of DI and other image transformations.
-```python
-python gradcam_ious_run.py
-```
+In this command:
+* --black_box densenet121 specifies that all models except Densenet121 are used as white-box models.
+* --attack Ensemble_CommonWeakness indicates that the attack integrates the Common Weakness technique.
+* --Ours enables our proposed method.
+

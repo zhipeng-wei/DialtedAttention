@@ -14,4 +14,3 @@ class LogitLoss(nn.Module):
         else:
             loss = logit_dists.mean()
             return loss
-
