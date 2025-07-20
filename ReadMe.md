@@ -6,6 +6,7 @@
 
 **[Zhipeng Wei](https://zhipeng-wei.github.io/), [Jingjing Chen](https://fvl.fudan.edu.cn/people/jingjingchen), [Yu-Gang Jiang](https://fvl.fudan.edu.cn/people/yugangjiang/)**
 
+</div>
 
 # Environment
 See [environment.yml](./environment.yml) for package requirements.
@@ -19,7 +20,7 @@ The variables OPT_PATH and NIPS_DATA in [utils.py](./utils.py) need to be specif
 # Run our experiments
 ## Our Attack
 ```
-python main.py --gpu 0 --white_box resnet50 --attack DTMI_DilatedAttention --loss_fn Attention --target --baseline_cmd DI_TI_MI --linear_aug Ours --layers layer1 layer2 layer3 layer4
+python main.py --gpu 0 --white_box resnet50 --attack DTMI_DilatedAttention --loss_fn Attention --target --baseline_cmd DI_TI_MI --linear_aug Ours --layers layer1 layer2 layer3 layer4 --step
 ```
 In this command:
 * --white_box resnet50 spcifies the white-box surrogate model

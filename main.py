@@ -101,7 +101,7 @@ if __name__ == '__main__':
         
         # attack 
         if args.attack == 'DTMI':
-            adversor = getattr(transfer_attacks, args.attack)(args.baseline_cmd, args.linear_aug, white_model, eval_models, loss_fn=args.loss_fn, eval_steps=[i+20 for i in range(0, 300, 20)], steps=args.step, \
+            adversor = getattr(transfer_attacks, args.attack)(args.baseline_cmd, args.linear_aug, white_model, eval_models, loss_fn=args.loss_fn, eval_steps=[i+20 for i in range(0, args.step, 20)], steps=args.step, \
                 target=args.target)
         elif args.attack == 'DTMI_Untargeted':
             adversor = getattr(transfer_attacks, args.attack)(args.baseline_cmd, args.linear_aug, white_model, eval_models, loss_fn='CE', eval_steps=[10], steps=10, \
