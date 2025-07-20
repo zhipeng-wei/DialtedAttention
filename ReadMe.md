@@ -30,6 +30,8 @@ In this command:
 * --baseline_cmd DI_TI_MI indicates that the attack integrates DI, TI, and MI techniques.
 * --linear_aug Ours enables our dynamic linear augmentation method.
 * --layers layer1 layer2 layer3 layer4 specifies the layers on which the attention loss is calculated.
+
+
 **Note:** The specific layers used to compute attention loss vary by model:
 
 - **densenet121**:  
